@@ -948,7 +948,7 @@ func NewConfig(templateLoader TemplateLoader) *Config {
 	conf.FieldNamingTemplate = "{{FmtFieldName (stringifyFirstChar .) }}"
 
 	outDir := "."
-	module := "github.com/alexj212/test"
+	module := "test"
 	modelPackageName := "model"
 	daoPackageName := "dao"
 	apiPackageName := "api"

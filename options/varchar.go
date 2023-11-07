@@ -19,24 +19,24 @@ var (
 
 	ModelPackageName    = goopt.String([]string{"--model"}, "model", "name to set for model package")
 	ModelNamingTemplate = goopt.String([]string{"--model_naming"}, "{{FmtFieldName .}}", "model naming template to name structs")
-	//FieldNamingTemplate = goopt.String([]string{"--field_naming"}, "{{FmtFieldName (stringifyFirstChar .) }}", "field naming template to name structs")
-	FileNamingTemplate = goopt.String([]string{"--file_naming"}, "{{.}}", "file_naming template to name files")
+	FieldNamingTemplate = goopt.String([]string{"--field_naming"}, "{{FmtFieldName (stringifyFirstChar .) }}", "field naming template to name structs")
+	FileNamingTemplate  = goopt.String([]string{"--file_naming"}, "{{.}}", "file_naming template to name files")
 
 	DaoPackageName = goopt.String([]string{"--dao"}, "dao", "name to set for dao package")
 	ApiPackageName = goopt.String([]string{"--api"}, "api", "name to set for api package")
 	//GrpcPackageName = goopt.String([]string{"--grpc"}, "grpc", "name to set for grpc package")
-	OutDir = goopt.String([]string{"--out"}, ".", "output dir")
-	//Module        = goopt.String([]string{"--module"}, "example.com/example", "module path")
-	Overwrite = goopt.Flag([]string{"--overwrite"}, []string{"--no-overwrite"}, "Overwrite existing files (default)", "disable overwriting files")
-	//Windows       = goopt.Flag([]string{"--windows"}, []string{}, "use windows line endings in generated files", "")
+	OutDir        = goopt.String([]string{"--out"}, ".", "output dir")
+	Module        = goopt.String([]string{"--module"}, "example.com/example", "module path")
+	Overwrite     = goopt.Flag([]string{"--overwrite"}, []string{"--no-overwrite"}, "Overwrite existing files (default)", "disable overwriting files")
+	Windows       = goopt.Flag([]string{"--windows"}, []string{}, "use windows line endings in generated files", "")
 	NoColorOutput = goopt.Flag([]string{"--no-color"}, []string{}, "disable color output", "")
 
 	//ContextFileName  = goopt.String([]string{"--context"}, "", "context file (json) to populate context with")
 	MappingFileName = goopt.String([]string{"--mapping"}, "", "mapping file (json) to map sql types to golang/protobuf etc")
 	//ExecCustomScript = goopt.String([]string{"--exec"}, "", "execute script for custom code generation")
 
-	//AddJSONAnnotation = goopt.Flag([]string{"--json"}, []string{"--no-json"}, "Add json annotations (default)", "Disable json annotations")
-	JsonNameFormat = goopt.String([]string{"--json-fmt"}, "snake", "json name format [snake | camel | lower_camel | none]")
+	AddJSONAnnotation = goopt.Flag([]string{"--json"}, []string{"--no-json"}, "Add json annotations (default)", "Disable json annotations")
+	JsonNameFormat    = goopt.String([]string{"--json-fmt"}, "snake", "json name format [snake | camel | lower_camel | none]")
 
 	//AddXMLAnnotation = goopt.Flag([]string{"--xml"}, []string{"--no-xml"}, "Add xml annotations (default)", "Disable xml annotations")
 	XmlNameFormat = goopt.String([]string{"--xml-fmt"}, "snake", "xml name format [snake | camel | lower_camel | none]")
@@ -46,7 +46,7 @@ var (
 	//ProtoNameFormat = goopt.String([]string{"--proto-fmt"}, "snake", "proto name format [snake | camel | lower_camel | none]")
 	//GogoProtoImport = goopt.String([]string{"--gogo-proto"}, "", "location of gogo import ")
 
-	//AddDBAnnotation = goopt.Flag([]string{"--db"}, []string{}, "Add db annotations (tags)", "")
+	AddDBAnnotation = goopt.Flag([]string{"--db"}, []string{}, "Add db annotations (tags)", "")
 	//UseGureguTypes = goopt.Flag([]string{"--guregu"}, []string{}, "Add guregu null types", "")
 
 	//CopyTemplates    = goopt.Flag([]string{"--copy-templates"}, []string{}, "Copy regeneration templates to project directory", "")
@@ -54,7 +54,7 @@ var (
 	//MakefileGenerate = goopt.Flag([]string{"--makefile"}, []string{}, "Generate Makefile in output dir", "")
 	//ServerGenerate  = goopt.Flag([]string{"--server"}, []string{}, "Generate server app output dir", "")
 	DaoGenerate = goopt.Flag([]string{"--generate-dao"}, []string{}, "Generate dao functions", "")
-	//ProjectGenerate = goopt.Flag([]string{"--generate-proj"}, []string{}, "Generate project readme and gitignore", "")
+	// ProjectGenerate = goopt.Flag([]string{"--generate-proj"}, []string{}, "Generate project readme and gitignore", "")
 	RestAPIGenerate = goopt.Flag([]string{"--rest"}, []string{}, "Enable generating RESTful api", "")
 	RunGoFmt        = goopt.Flag([]string{"--run-gofmt"}, []string{}, "run gofmt on output dir", "")
 

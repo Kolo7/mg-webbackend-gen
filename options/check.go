@@ -36,6 +36,16 @@ func CheckOptions() bool {
 	if OutDir == nil || *OutDir == "" {
 		*OutDir = "."
 	}
+	// if packageName is not set we need to default it
+	if ModelPackageName == nil || *ModelPackageName == "" {
+		*ModelPackageName = "model"
+	}
+	if DaoPackageName == nil || *DaoPackageName == "" {
+		*DaoPackageName = "dao"
+	}
+	if ApiPackageName == nil || *ApiPackageName == "" {
+		*ApiPackageName = "api"
+	}
 
 	if *MappingFileName != "" {
 		err := dbmeta.LoadMappings(*MappingFileName, *Verbose)

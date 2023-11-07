@@ -3,6 +3,7 @@ package {{.daoPackageName}}
 import (
     "context"
     "time"
+    "database/sql"
 
 	"{{.modelFQPN}}"
 
@@ -14,13 +15,14 @@ var (
     _ = time.Second
     {{if .UseGuregu}} _ = null.Bool{} {{end}}
     _ = uuid.UUID{}
+    _ sql.Result
 )
 
-
+{{$tableInfo := .}}
 
 {{template "dao_gorm_getall.go.tmpl" .}}
 {{template "dao_gorm_get.go.tmpl" .}}
 {{template "dao_gorm_add.go.tmpl" .}}
 {{template "dao_gorm_update.go.tmpl" .}}
 {{template "dao_gorm_delete.go.tmpl" .}}
-
+{{range $field := .TableInfo.CodeFields}}{{if eq $field.GoFieldName "OnlineStatus"}}{{template "dao_gorm_online.go.tmpl" $tableInfo}}{{end}}{{end}}

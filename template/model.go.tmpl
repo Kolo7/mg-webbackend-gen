@@ -1,18 +1,16 @@
 package {{.modelPackageName}}
 
 import (
-    "database/sql"
     "time"
+	"database/sql"
 
-    "github.com/google/uuid"
-    {{if .UseGuregu}} "github.com/guregu/null" {{end}}
-	"gorm.io/datatypes"
-	"gorm.io/gorm"
+	"github.com/jinzhu/gorm"
 )
 
 var (
-	_ = datatypes.JSON{}
+	_ sql.Result
 )
+
 
 /*
 DB Table Details
@@ -44,43 +42,13 @@ type {{.StructName}} struct {
 {{else}}
 
 // {{.StructName}} struct is a row record of the {{.TableName}} table in the {{.DatabaseName}} database
-/*
 type {{.StructName}} struct {
     {{range .TableInfo.Fields}}{{.}}
     {{end}}
 }
-*/
+
 
 {{end}}
-
-var {{.TableName}}TableInfo = &TableInfo {
-	Name: "{{.TableName}}",
-	Columns: []*ColumnInfo{
-        {{range .TableInfo.CodeFields}}
-        {
-        	Index: {{.ColumnMeta.Index}},
-        	Name: "{{.ColumnMeta.Name}}",
-        	Comment: `{{.ColumnMeta.Comment}}`,
-        	Notes: `{{.ColumnMeta.Notes}}`,
-        	Nullable: {{.ColumnMeta.Nullable}},
-        	DatabaseTypeName: "{{.ColumnMeta.DatabaseTypeName}}",
-        	DatabaseTypePretty: "{{.ColumnMeta.DatabaseTypePretty}}",
-        	IsPrimaryKey: {{.ColumnMeta.IsPrimaryKey}},
-        	IsAutoIncrement: {{.ColumnMeta.IsAutoIncrement}},
-        	IsArray: {{.ColumnMeta.IsArray}},
-        	ColumnType: "{{.ColumnMeta.ColumnType}}",
-        	ColumnLength: {{.ColumnMeta.ColumnLength}},
-        	GoFieldName: "{{.GoFieldName}}",
-        	GoFieldType: "{{.GoFieldType}}",
-        	JSONFieldName: "{{.JSONFieldName}}",
-        	ProtobufFieldName: "{{.ProtobufFieldName}}",
-        	ProtobufType: "{{.ProtobufType}}",
-        	ProtobufPos: {{.ProtobufPos}},
-        },
-        {{end}}
-	},
-}
-
 
 
 // TableName sets the insert table name for this struct type
@@ -95,14 +63,4 @@ func ({{.ShortStructName}} *{{.StructName}}) BeforeSave(tx *gorm.DB) error {
 
 // Prepare invoked before saving, can be used to populate fields etc.
 func ({{.ShortStructName}} *{{.StructName}}) Prepare() {
-}
-
-// Validate invoked before performing action, return an error if field is not populated.
-func ({{.ShortStructName}} *{{.StructName}}) Validate(action Action) error {
-    return nil
-}
-
-// TableInfo return table meta data
-func ({{.ShortStructName}} *{{.StructName}}) TableInfo() *TableInfo {
-	return {{.TableName}}TableInfo
 }

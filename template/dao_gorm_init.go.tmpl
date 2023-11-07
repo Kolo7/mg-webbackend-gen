@@ -1,37 +1,13 @@
 package {{.daoPackageName}}
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"reflect"
 
-	"gorm.io/gorm"
+
+	"github.com/jinzhu/gorm"
 )
-
-// BuildInfo is used to define the application build info, and inject values into via the build process.
-type BuildInfo struct {
-
-    // BuildDate date string of when build was performed filled in by -X compile flag
-	BuildDate    string
-
-	// LatestCommit date string of when build was performed filled in by -X compile flag
-	LatestCommit string
-
-	// BuildNumber date string of when build was performed filled in by -X compile flag
-	BuildNumber  string
-
-	// BuiltOnIP date string of when build was performed filled in by -X compile flag
-	BuiltOnIP    string
-
-	// BuiltOnOs date string of when build was performed filled in by -X compile flag
-	BuiltOnOs    string
-
-	// RuntimeVer date string of when build was performed filled in by -X compile flag
-	RuntimeVer   string
-}
-
-type LogSql func(ctx context.Context, sql string)
 
 var (
     // ErrNotFound error when record not found
@@ -54,15 +30,7 @@ var (
 
     // DB reference to database
 	DB           *gorm.DB
-
-	// AppBuildInfo reference to build info
-	AppBuildInfo *BuildInfo
-
-	// Logger function that will be invoked before executing sql
-	Logger LogSql
 )
-
-
 
 // Copy a src struct into a destination struct
 func Copy(dst interface{}, src interface{}) error {

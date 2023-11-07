@@ -1,8 +1,9 @@
 package options
 
 import (
+	"embed"
+
 	"github.com/droundy/goopt"
-	"github.com/gobuffalo/packr/v2"
 	"github.com/kolo7/mg-webbackend-gen/dbmeta"
 	"github.com/logrusorgru/aurora"
 )
@@ -73,7 +74,7 @@ var (
 
 	//NameTest = goopt.String([]string{"--name_test"}, "", "perform name test using the --model_naming or --file_naming options")
 
-	BaseTemplates *packr.Box
+	BaseTemplates *embed.FS
 	TableInfos    map[string]*dbmeta.ModelInfo
 	Au            aurora.Aurora
 )

@@ -29,7 +29,7 @@ func LoadTemplate(filename string) (tpl *dbmeta.GenTemplate, err error) {
 		}
 	}
 
-	content, err := options.BaseTemplates.FindString(baseName)
+	content, err := options.BaseTemplates.ReadFile("template/" + baseName)
 	if err != nil {
 		return nil, fmt.Errorf("%s not found internally", baseName)
 	}
@@ -37,6 +37,6 @@ func LoadTemplate(filename string) (tpl *dbmeta.GenTemplate, err error) {
 		fmt.Printf("Loaded template from app: %s\n", filename)
 	}
 
-	tpl = &dbmeta.GenTemplate{Name: "internal://" + filename, Content: content}
+	tpl = &dbmeta.GenTemplate{Name: "internal://" + filename, Content: string(content)}
 	return tpl, nil
 }

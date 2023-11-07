@@ -1,10 +1,11 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
 	"strings"
 
-	"github.com/gobuffalo/packr/v2"
 	"github.com/kolo7/mg-webbackend-gen/config"
 	"github.com/kolo7/mg-webbackend-gen/database"
 	"github.com/kolo7/mg-webbackend-gen/dbmeta"
@@ -13,13 +14,16 @@ import (
 	"github.com/logrusorgru/aurora"
 )
 
+//go:embed template/*
+var embedFiles embed.FS
+
 func main() {
 	// 初始化彩色终端输出
 	options.Au = aurora.NewAurora(!*options.NoColorOutput)
 	dbmeta.InitColorOutput(options.Au)
 
 	// 从包体取出模板
-	options.BaseTemplates = packr.New("gen", "./template")
+	options.BaseTemplates = &embedFiles
 
 	// 检查必要参数设置
 	if !options.CheckOptions() {
@@ -70,9 +74,12 @@ func main() {
 }
 
 func listTemplates() {
-	for i, file := range options.BaseTemplates.List() {
-		fmt.Printf("   [%d] [%s]\n", i, file)
-	}
+	var i int
+	fs.WalkDir(options.BaseTemplates, ".", func(path string, d fs.DirEntry, err error) error {
+		fmt.Printf("   [%d] [%s]\n", i, d.Name())
+		i++
+		return nil
+	})
 }
 
 func initialize(conf *dbmeta.Config) {

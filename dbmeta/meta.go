@@ -693,13 +693,6 @@ func LoadTableInfo(db *sql.DB, dbTables []string, excludeDbTables []string, conf
 
 		dbMeta, err := LoadMeta(conf.SQLType, db, conf.SQLDatabase, tableName)
 		if err != nil {
-			msg := fmt.Sprintf("Warning - LoadMeta skipping table info for %s error: %v\n", tableName, err)
-			if au != nil {
-				fmt.Print(au.Yellow(msg))
-			} else {
-				fmt.Printf(msg)
-			}
-
 			continue
 		}
 
@@ -709,7 +702,7 @@ func LoadTableInfo(db *sql.DB, dbTables []string, excludeDbTables []string, conf
 			if au != nil {
 				fmt.Print(au.Red(msg))
 			} else {
-				fmt.Printf(msg)
+				fmt.Print(msg)
 			}
 
 			continue

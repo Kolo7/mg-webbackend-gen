@@ -3,13 +3,14 @@
 mg-webbackend-gen目的是开发一个代码生成工具。工具适用于数据库表，这里特指 mysql，表的特征是没有外键关联的配置表，但表之间可以有隐性的关联关系。字段类型主要是字符串和数字。表和所有的字段都有详细的备注，严格的类型定义，具体的数据库要求，以及特殊字段的处理在后面详细介绍。
 
 ### 安装
+
 > GOPROXY=https://goproxy.io,direct go install github.com/kolo7/mg-webbackend-gen@latest
 
 ### 试用
 
 ```bash
-mg-webbackend-gen --connstr="root:E2FU0O1b@tcp(0.0.0.0:3306)/aiinteract?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4" \
---database=aiinteract \
+mg-webbackend-gen --connstr="root:passwd@tcp(0.0.0.0:3306)/dbname?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4" \
+--database=dbname \
 --generate-dao \
 --generate-service \
 --generate-controller \
@@ -21,6 +22,26 @@ mg-webbackend-gen --connstr="root:E2FU0O1b@tcp(0.0.0.0:3306)/aiinteract?timeout=
 --out=./example \
 --module="example"
 ```
+
+### 帮助
+
+| 参数                  | 作用                                               | 示例                                 |
+| --------------------- | -------------------------------------------------- | ------------------------------------ |
+| --connstr             | 数据库连接                                         | root:passwd@tcp(0.0.0.0:3306)/dbname |
+| --database            | 数据库名                                           | dbname                               |
+| --generate-dao        | 是否生成 dao 层代码                                |                                      |
+| --generate-service    | 是否生成  service 层代码                          |                                      |
+| --generate-controller | 是否生成 controller 层代码                         |                                      |
+| --rest                | 是否生成 api model 对象                            |                                      |
+| --controller          | 更改 controller 包名，默认是 controller            | --controller=server                  |
+| --dao                 | 更改 dao 包名，默认是 dao                          | --dao=daos                           |
+| --service             | 更改 dao 包名，默认是 dao                          | --service=services                   |
+| --model               | 更改 model 包名，默认是 model                      | --model=do                           |
+| --gorm                | 是否使用gorm，最好是                               |                                      |
+| --json-fmt            | json 标签的命名风格,支持 snake, camel, lower_camel | --json-fmt=lower_camel               |
+| --overwrite           | 是否覆盖已存在的输出                               |                                      |
+| --out                 | 输出目录                                           | --out=./example                      |
+| --module              | 项目包名                                           | --module="github.com/kolo7/example"  |
 
 ### 设计
 
@@ -40,6 +61,7 @@ mg-webbackend-gen --connstr="root:E2FU0O1b@tcp(0.0.0.0:3306)/aiinteract?timeout=
 必须要有 ID 字段，bigint类型，字段自增，主键。
 **特殊字段处理**
 特殊字段都是可选的，如果存在则进行相应的特殊处理
+
 - created_at：创建时间，datetime 类型，非空
 - updated_at：更新时间，datetime 类型，非空
 - created_by：创建人，varchar 类型，非空，默认空字符串

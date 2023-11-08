@@ -1,0 +1,21 @@
+{{define "service_getall.go.tmpl"}}
+func {{ .StructName}}GetAll(ctx context.Context, req *{{.apiPackageName}}.{{ .StructName}}GetAllReq) (*{{.apiPackageName}}.{{ .StructName}}GetAllResp, error) {
+    records, totalRaws, err := {{.daoPackageName}}.GetAll{{.StructName}}(ctx, req.Page, req.PageNum,req.Order)
+    if err != nil {
+        return nil, err
+    }
+
+    getResp := []*{{.apiPackageName}}.{{ .StructName}}GetResp{}
+    for _,v := range records { 
+        getResp = append(getResp, &{{.apiPackageName}}.{{ .StructName}}GetResp{
+            {{range $field := .TableInfo.CodeFields}}{{ $field.GoFieldName}}: v.{{ $field.GoFieldName}},{{end}}
+        })
+    }
+
+    result := &api.{{ .StructName}}GetAllResp{
+        Total: totalRaws,
+        List: getResp,
+    }
+    return result, nil
+}
+{{end}}

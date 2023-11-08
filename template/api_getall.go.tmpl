@@ -1,0 +1,12 @@
+{{define "api_getall.go.tmpl"}}
+type {{ .StructName}}GetAllReq struct {
+    Page int `json:"page" form:"page"`
+    PageNum int `json:"pageNum" form:"page"`
+    Order string `json:"order" form:"order"`
+}
+
+type {{ .StructName}}GetAllResp struct {
+    Total int64 `json:"total"`
+    List []*{{ .StructName}}GetResp `json:"list"`
+}
+{{end}}

@@ -1,0 +1,20 @@
+package {{.apiPackageName}}
+
+import (
+    "time"
+    "database/sql"
+)
+
+var (
+    _ = time.Time{}
+    _ sql.Result
+)
+
+
+{{$tableInfo := .}}
+{{template "api_getall.go.tmpl" .}}
+{{template "api_get.go.tmpl" .}}
+{{template "api_add.go.tmpl" .}}
+{{template "api_update.go.tmpl" .}}
+{{template "api_delete.go.tmpl" .}}
+{{range $field := .TableInfo.CodeFields}}{{if eq $field.GoFieldName "OnlineStatus"}}{{template "api_online.go.tmpl" $tableInfo}}{{end}}{{end}}

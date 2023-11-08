@@ -1,0 +1,9 @@
+{{define "api_delete.go.tmpl"}}
+type {{.StructName}}DeleteReq struct {
+    {{range $field := .TableInfo.CodeFields}}
+    {{ if $field.PrimaryKeyArgName }} {{$field.GoFieldName}} {{$field.GoFieldType}} `{{$field.JSONAnnotation}} form:"{{$field.JSONFieldName}}"`{{end}}{{end}}
+}
+
+type {{.StructName}}DeleteResp struct {
+}
+{{end}}

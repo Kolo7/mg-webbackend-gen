@@ -1,0 +1,9 @@
+{{define "api_online.go.tmpl"}}
+type {{.StructName}}OnlineReq struct {
+    OnlineStatus int32 `json:"onlineStatus" form:"onlineStatus" binding:"oneof:0 1"`{{range $field := .TableInfo.CodeFields}}
+    {{ if $field.PrimaryKeyArgName }} {{$field.GoFieldName}} {{$field.GoFieldType}} `{{$field.JSONAnnotation}} form:"{{$field.JSONFieldName}}"`{{end}}{{end}}
+}
+
+type {{.StructName}}OnlineResp struct {
+}
+{{end}}

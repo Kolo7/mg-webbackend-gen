@@ -1,0 +1,28 @@
+package {{.apiPackageName}}
+
+import (
+    "github.com/gin-gonic/gin"
+)
+
+// Pagination pagination.
+type Pagination struct {
+	PageNum  int `form:"pageNum,default=1"`   // 分页页码
+	PageSize int `form:"pageSize,default=10"` // 分页大小
+}
+
+// Offset is
+func (p *Pagination) Offset() int {
+	return (p.PageNum - 1) * p.PageSize
+}
+
+func (b *BackPagination) Bind(ctx *gin.Context) {
+	if err := ctx.ShouldBind(b);err!= nil {
+        return err
+    }
+    if b.Page <= 0 {
+		b.Page = 1
+	}
+	if b.PerPage <= 0 {
+		b.PerPage = 10
+	}
+}

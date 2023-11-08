@@ -1,0 +1,26 @@
+package {{.servicePackageName}}
+
+import (
+    "context"
+    "time"
+    "database/sql"
+
+	"{{.apiFQPN}}"
+	"{{.modelFQPN}}"
+	"{{.daoFQPN}}"
+
+    "github.com/google/uuid"
+)
+
+var (
+    _ = time.Second
+    {{if .UseGuregu}} _ = null.Bool{} {{end}}
+    _ = uuid.UUID{}
+    _ sql.Result
+)
+{{$tableInfo := .}}{{template "service_getall.go.tmpl" .}}
+{{template "service_get.go.tmpl" .}}
+{{template "service_add.go.tmpl" .}}
+{{template "service_update.go.tmpl" .}}
+{{template "service_delete.go.tmpl" .}}
+{{range $field := .TableInfo.CodeFields}}{{if eq $field.GoFieldName "OnlineStatus"}}{{template "service_online.go.tmpl" $tableInfo}}{{end}}{{end}}

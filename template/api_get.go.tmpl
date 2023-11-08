@@ -1,0 +1,10 @@
+{{define "api_get.go.tmpl"}}
+type {{.StructName}}GetReq struct {
+    {{range $field := .TableInfo.CodeFields}}{{ if $field.PrimaryKeyArgName }} {{$field.GoFieldName}} {{$field.GoFieldType}} `{{$field.JSONAnnotation}} form:"{{$field.JSONFieldName}}"`{{end}}{{end}}
+}
+
+type {{.StructName}}GetResp struct {
+    {{range $field := .TableInfo.CodeFields}}
+    {{ $field.GoFieldName}} {{ $field.GoFieldType}} `{{ $field.JSONAnnotation}}`{{end}}
+}
+{{end}}

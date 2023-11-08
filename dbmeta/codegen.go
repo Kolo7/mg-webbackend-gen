@@ -137,7 +137,8 @@ func (c *Config) GetTemplate(genTemplate *GenTemplate) (*template.Template, erro
 		baseName == "dao_sqlx.go.tmpl" ||
 		baseName == "code_dao_sqlx.md.tmpl" ||
 		baseName == "code_dao_gorm.md.tmpl" ||
-		baseName == "code_http.md.tmpl" {
+		baseName == "code_http.md.tmpl" ||
+		baseName == "service.go.tmpl" {
 
 		operations := []string{"add", "delete", "get", "getall", "update", "online"}
 		for _, op := range operations {
@@ -160,6 +161,9 @@ func (c *Config) GetTemplate(genTemplate *GenTemplate) (*template.Template, erro
 			}
 			if baseName == "code_http.md.tmpl" {
 				filename = fmt.Sprintf("api_%s.go.tmpl", op)
+			}
+			if baseName == "service.go.tmpl" {
+				filename = fmt.Sprintf("service_%s.go.tmpl", op)
 			}
 
 			var subTemplate *GenTemplate
@@ -568,6 +572,12 @@ func (c *Config) WriteTemplate(genTemplate *GenTemplate, data map[string]interfa
 	data["daoFQPN"] = c.DaoFQPN
 	data["daoPackageName"] = c.DaoPackageName
 
+	data["serviceFQPN"] = c.ServiceFQPN
+	data["servicePackageName"] = c.ServicePackageName
+
+	data["controllerFQPN"] = c.ControllerFQPN
+	data["controllerPackageName"] = c.ControllerPackageName
+
 	data["UseGuregu"] = c.UseGureguTypes
 
 	data["apiFQPN"] = c.APIFQPN
@@ -592,7 +602,7 @@ func (c *Config) WriteTemplate(genTemplate *GenTemplate, data map[string]interfa
 	if err != nil {
 		return fmt.Errorf("error in rendering %s: %s", genTemplate.Name, err.Error())
 	}
-
+	// fileContents := buf.Bytes()
 	fileContents, err := c.format(genTemplate, buf.Bytes(), outputFile)
 	if err != nil {
 		return fmt.Errorf("error writing %s - error: %v", outputFile, err)
@@ -896,6 +906,10 @@ type Config struct {
 	ProtobufNameFormat    string
 	DaoPackageName        string
 	DaoFQPN               string
+	ServicePackageName    string
+	ServiceFQPN           string
+	ControllerPackageName string
+	ControllerFQPN        string
 	APIPackageName        string
 	APIFQPN               string
 	GrpcPackageName       string
@@ -951,10 +965,12 @@ func NewConfig(templateLoader TemplateLoader) *Config {
 	module := "test"
 	modelPackageName := "model"
 	daoPackageName := "dao"
+	servicePackageName := "service"
 	apiPackageName := "api"
 
 	conf.ModelPackageName = modelPackageName
 	conf.DaoPackageName = daoPackageName
+	conf.ServicePackageName = servicePackageName
 	conf.APIPackageName = apiPackageName
 
 	conf.AddJSONAnnotation = true
@@ -979,6 +995,7 @@ func NewConfig(templateLoader TemplateLoader) *Config {
 	conf.Module = module
 	conf.ModelFQPN = module + "/" + modelPackageName
 	conf.DaoFQPN = module + "/" + daoPackageName
+	conf.ServiceFQPN = module + "/" + servicePackageName
 	conf.APIFQPN = module + "/" + apiPackageName
 
 	if conf.ServerPort == 80 {

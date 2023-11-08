@@ -1,0 +1,11 @@
+{{define "service_delete.go.tmpl"}}
+func {{ .StructName}}Delete(ctx context.Context, req *{{.apiPackageName}}.{{ .StructName}}DeleteReq) (*{{.apiPackageName}}.{{ .StructName}}DeleteResp, error) {
+    _, err := {{.daoPackageName}}.Delete{{.StructName}}(ctx, req.{{range $field := .TableInfo.CodeFields}}{{ if $field.PrimaryKeyArgName }}{{$field.GoFieldName}}{{end}}{{end}})
+    if err != nil {
+        return nil, err
+    }
+
+    result := &{{.apiPackageName}}.{{ .StructName}}DeleteResp{}
+    return result, nil
+}
+{{end}}

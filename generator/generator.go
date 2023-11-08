@@ -13,29 +13,86 @@ import (
 )
 
 func Generate(conf *dbmeta.Config) error {
-	modelDir := filepath.Join(*options.OutDir, *options.ModelPackageName)
-	daoDir := filepath.Join(*options.OutDir, *options.DaoPackageName)
-	apiDir := filepath.Join(*options.OutDir, *options.ApiPackageName)
-	err := initDir(modelDir, daoDir, apiDir)
+	err := MkDirAll()
 	if err != nil {
 		return err
 	}
+	err = generateModel(conf)
+	if err != nil {
+		return err
+	}
+	err = generateDao(conf)
+	if err != nil {
+		return err
+	}
+	err = generateService(conf)
+	if err != nil {
+		return err
+	}
+	err = generateAPI(conf)
+	if err != nil {
+		return err
+	}
+	if *options.RunGoFmt {
+		GoFmt(conf.OutDir)
+	}
+	return nil
+}
 
-	var daoTmpl *dbmeta.GenTemplate
-	var daoInitTmpl *dbmeta.GenTemplate
-	var modelTmpl *dbmeta.GenTemplate
-	//var modelBaseTmpl *dbmeta.GenTemplate
-
-	if *options.AddGormAnnotation {
-		if daoTmpl, err = config.LoadTemplate("dao_gorm.go.tmpl"); err != nil {
-			fmt.Print(options.Au.Red(fmt.Sprintf("Error loading template %v\n", err)))
-			return err
-		}
-		if daoInitTmpl, err = config.LoadTemplate("dao_gorm_init.go.tmpl"); err != nil {
-			fmt.Print(options.Au.Red(fmt.Sprintf("Error loading template %v\n", err)))
+func MkDirAll() error {
+	modelDir := filepath.Join(*options.OutDir, *options.ModelPackageName)
+	daoDir := filepath.Join(*options.OutDir, *options.DaoPackageName)
+	serviceDir := filepath.Join(*options.OutDir, *options.ServicePackageName)
+	controllerDir := filepath.Join(*options.OutDir, *options.ControllerPackageName)
+	apiDir := filepath.Join(*options.OutDir, *options.ApiPackageName)
+	err := os.MkdirAll(*options.OutDir, 0777)
+	if err != nil && !*options.Overwrite {
+		fmt.Print(options.Au.Red(fmt.Sprintf("unable to create outDir: %s error: %v\n", *options.OutDir, err)))
+		return err
+	}
+	err = os.MkdirAll(modelDir, 0777)
+	if err != nil && !*options.Overwrite {
+		fmt.Print(options.Au.Red(fmt.Sprintf("unable to create modelDir: %s error: %v\n", *options.OutDir, err)))
+		return err
+	}
+	if *options.DaoGenerate {
+		err = os.MkdirAll(daoDir, 0777)
+		if err != nil && !*options.Overwrite {
+			fmt.Print(options.Au.Red(fmt.Sprintf("unable to create daoDir: %s error: %v\n", daoDir, err)))
 			return err
 		}
 	}
+	if *options.ServiceGenerate {
+		err = os.MkdirAll(serviceDir, 0777)
+		if err != nil && !*options.Overwrite {
+			fmt.Print(options.Au.Red(fmt.Sprintf("unable to create daoDir: %s error: %v\n", daoDir, err)))
+			return err
+		}
+	}
+	if *options.RestAPIGenerate {
+		err = os.MkdirAll(apiDir, 0777)
+		if err != nil && !*options.Overwrite {
+			fmt.Print(options.Au.Red(fmt.Sprintf("unable to create daoDir: %s error: %v\n", daoDir, err)))
+			return err
+		}
+	}
+	if *options.ControllerGenerate {
+		err = os.MkdirAll(controllerDir, 0777)
+		if err != nil && !*options.Overwrite {
+			fmt.Print(options.Au.Red(fmt.Sprintf("unable to create daoDir: %s error: %v\n", daoDir, err)))
+			return err
+		}
+	}
+	return nil
+}
+
+// generate model
+func generateModel(conf *dbmeta.Config) error {
+	var (
+		err       error
+		modelTmpl *dbmeta.GenTemplate
+		modelDir  = filepath.Join(*options.OutDir, *options.ModelPackageName)
+	)
 	if modelTmpl, err = config.LoadTemplate("model.go.tmpl"); err != nil {
 		fmt.Print(options.Au.Red(fmt.Sprintf("Error loading template %v\n", err)))
 		return err
@@ -54,80 +111,118 @@ func Generate(conf *dbmeta.Config) error {
 			fmt.Print(options.Au.Red(fmt.Sprintf("Error writing file: %v\n", err)))
 			return err
 		}
-		if *options.DaoGenerate {
-			// write dao
-			outputFile := filepath.Join(daoDir, CreateGoSrcFileName(tableName))
-			err = conf.WriteTemplate(daoTmpl, modelInfo, outputFile)
-			if err != nil {
-				fmt.Print(options.Au.Red(fmt.Sprintf("Error writing file: %v\n", err)))
-				return err
+	}
+	return nil
+}
+
+func generateDao(conf *dbmeta.Config) error {
+	if !*options.DaoGenerate {
+		return nil
+	}
+	var (
+		err         error
+		daoTmpl     *dbmeta.GenTemplate
+		daoInitTmpl *dbmeta.GenTemplate
+		daoDir      = filepath.Join(*options.OutDir, *options.DaoPackageName)
+	)
+	if daoTmpl, err = config.LoadTemplate("dao_gorm.go.tmpl"); err != nil {
+		fmt.Print(options.Au.Red(fmt.Sprintf("Error loading template %v\n", err)))
+		return err
+	}
+	if daoInitTmpl, err = config.LoadTemplate("dao_gorm_init.go.tmpl"); err != nil {
+		fmt.Print(options.Au.Red(fmt.Sprintf("Error loading template %v\n", err)))
+		return err
+	}
+	for tableName, tableInfo := range options.TableInfos {
+		if len(tableInfo.Fields) == 0 {
+			if *options.Verbose {
+				fmt.Printf("[%d] Table: %s - No Fields Available\n", tableInfo.Index, tableName)
 			}
+			continue
 		}
+		modelInfo := conf.CreateContextForTableFile(tableInfo)
+		// write dao
+		outputFile := filepath.Join(daoDir, CreateGoSrcFileName(tableName))
+		err = conf.WriteTemplate(daoTmpl, modelInfo, outputFile)
+		if err != nil {
+			fmt.Print(options.Au.Red(fmt.Sprintf("Error writing file: %v\n", err)))
+			return err
+		}
+
 	}
 	data := map[string]interface{}{}
 
-	if *options.DaoGenerate {
-		err = conf.WriteTemplate(daoInitTmpl, data, filepath.Join(daoDir, "dao_base.go"))
+	err = conf.WriteTemplate(daoInitTmpl, data, filepath.Join(daoDir, "dao_base.go"))
+	if err != nil {
+		fmt.Print(options.Au.Red(fmt.Sprintf("Error writing file: %v\n", err)))
+		os.Exit(1)
+	}
+	return nil
+}
+
+func generateService(conf *dbmeta.Config) error {
+	if !*options.ServiceGenerate {
+		return nil
+	}
+	var (
+		err         error
+		serviceTmpl *dbmeta.GenTemplate
+		serviceDir  = filepath.Join(*options.OutDir, *options.ServicePackageName)
+	)
+	if serviceTmpl, err = config.LoadTemplate("service.go.tmpl"); err != nil {
+		fmt.Print(options.Au.Red(fmt.Sprintf("Error loading template %v\n", err)))
+		return err
+	}
+
+	for tableName, tableInfo := range options.TableInfos {
+		if len(tableInfo.Fields) == 0 {
+			if *options.Verbose {
+				fmt.Printf("[%d] Table: %s - No Fields Available\n", tableInfo.Index, tableName)
+			}
+			continue
+		}
+		modelInfo := conf.CreateContextForTableFile(tableInfo)
+		serviceFile := filepath.Join(serviceDir, CreateGoSrcFileName(tableName))
+		err = conf.WriteTemplate(serviceTmpl, modelInfo, serviceFile)
 		if err != nil {
 			fmt.Print(options.Au.Red(fmt.Sprintf("Error writing file: %v\n", err)))
-			os.Exit(1)
-		}
-	}
-	// err = conf.WriteTemplate(modelBaseTmpl, data, filepath.Join(modelDir, "model_base.go"))
-	// if err != nil {
-	// 	fmt.Print(options.Au.Red(fmt.Sprintf("Error writing file: %v\n", err)))
-	// 	os.Exit(1)
-	// }
-	data = map[string]interface{}{
-		"deps":        "go list -f '{{ join .Deps  \"\\n\"}}' .",
-		"CommandLine": conf.CmdLine,
-		"Config":      conf,
-	}
-	if *options.RunGoFmt {
-		GoFmt(conf.OutDir)
-	}
-	return nil
-}
-
-func initDir(modelDir, daoDir, apiDir string) error {
-	err := os.MkdirAll(*options.OutDir, 0777)
-	if err != nil && !*options.Overwrite {
-		fmt.Print(options.Au.Red(fmt.Sprintf("unable to create outDir: %s error: %v\n", *options.OutDir, err)))
-		return err
-	}
-	err = os.MkdirAll(modelDir, 0777)
-	if err != nil && !*options.Overwrite {
-		fmt.Print(options.Au.Red(fmt.Sprintf("unable to create modelDir: %s error: %v\n", modelDir, err)))
-		return err
-	}
-	if *options.DaoGenerate {
-		err = os.MkdirAll(daoDir, 0777)
-		if err != nil && !*options.Overwrite {
-			fmt.Print(options.Au.Red(fmt.Sprintf("unable to create daoDir: %s error: %v\n", daoDir, err)))
-			return err
-		}
-	}
-
-	if *options.RestAPIGenerate {
-		err = os.MkdirAll(apiDir, 0777)
-		if err != nil && !*options.Overwrite {
-			fmt.Print(options.Au.Red(fmt.Sprintf("unable to create apiDir: %s error: %v\n", apiDir, err)))
 			return err
 		}
 	}
 	return nil
 }
 
-// createGoSrcFileName ensures name doesnt clash with go naming conventions like _test.go
-func createGoSrcFileName(tableName string) string {
-	name := dbmeta.Replace(*options.FileNamingTemplate, tableName)
-	// name := inflection.Singular(tableName)
-
-	if strings.HasSuffix(name, "_test") {
-		name = name[0 : len(name)-5]
-		name = name + "_tst"
+func generateAPI(conf *dbmeta.Config) error {
+	if !*options.RestAPIGenerate {
+		return nil
 	}
-	return name + ".go"
+	var (
+		err            error
+		controllerTmpl *dbmeta.GenTemplate
+		apiDir         = filepath.Join(*options.OutDir, *options.ApiPackageName)
+	)
+	if controllerTmpl, err = config.LoadTemplate("api.go.tmpl"); err != nil {
+		fmt.Print(options.Au.Red(fmt.Sprintf("Error loading template %v\n", err)))
+		return err
+	}
+
+	for tableName, tableInfo := range options.TableInfos {
+		if len(tableInfo.Fields) == 0 {
+			if *options.Verbose {
+				fmt.Printf("[%d] Table: %s - No Fields Available\n", tableInfo.Index, tableName)
+			}
+			continue
+		}
+		modelInfo := conf.CreateContextForTableFile(tableInfo)
+
+		restFile := filepath.Join(apiDir, CreateGoSrcFileName(tableName))
+		err = conf.WriteTemplate(controllerTmpl, modelInfo, restFile)
+		if err != nil {
+			fmt.Print(options.Au.Red(fmt.Sprintf("Error writing file: %v\n", err)))
+			return err
+		}
+	}
+	return nil
 }
 
 // CreateGoSrcFileName ensures name doesnt clash with go naming conventions like _test.go

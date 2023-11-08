@@ -1,0 +1,14 @@
+{{define "service_get.go.tmpl"}}
+func {{ .StructName}}Get(ctx context.Context, req *{{.apiPackageName}}.{{ .StructName}}GetReq) (*{{.apiPackageName}}.{{ .StructName}}GetResp, error) {
+    record, err := {{.daoPackageName}}.Get{{.StructName}}(ctx, req.{{range $field := .TableInfo.CodeFields}}{{ if $field.PrimaryKeyArgName }}{{$field.GoFieldName}}{{end}}{{end}})
+    if err != nil {
+        return nil, err
+    }
+
+    result := &{{.apiPackageName}}.{{ .StructName}}GetResp{
+        {{range $field := .TableInfo.CodeFields}}{{ $field.GoFieldName}}: record.{{ $field.GoFieldName}},{{end}}
+    }
+
+    return result, nil
+}
+{{end}}

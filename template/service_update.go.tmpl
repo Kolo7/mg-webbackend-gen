@@ -1,0 +1,16 @@
+{{define "service_update.go.tmpl"}}
+func {{ .StructName}}Update(ctx context.Context, req *{{.apiPackageName}}.{{ .StructName}}UpdateReq) (*{{.apiPackageName}}.{{ .StructName}}UpdateResp, error) {
+    updated := &{{.modelPackageName}}.{{ .StructName}}{
+        {{range $field := .TableInfo.CodeFields}}{{ $field.GoFieldName}}: req.{{ $field.GoFieldName}},{{end}}
+    }
+    record, _, err := {{.daoPackageName}}.Update{{.StructName}}(ctx,{{range $field := .TableInfo.CodeFields}}{{ if $field.PrimaryKeyArgName }} req.{{$field.GoFieldName}}, {{end}}{{end -}}updated)
+    if err != nil {
+        return nil, err
+    }
+
+    result := &api.{{ .StructName}}UpdateResp{
+        {{range $field := .TableInfo.CodeFields}}{{ $field.GoFieldName}}: record.{{ $field.GoFieldName}},{{end}}
+    }
+    return result, nil
+}
+{{end}}

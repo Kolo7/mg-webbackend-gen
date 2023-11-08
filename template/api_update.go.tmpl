@@ -1,0 +1,11 @@
+{{define "api_update.go.tmpl"}}
+type {{.StructName}}UpdateReq struct {
+    {{range $field := .TableInfo.CodeFields}}
+    {{ if $field.PrimaryKeyArgName }}{{$field.GoFieldName}} {{$field.GoFieldType}}  `{{$field.JSONAnnotation}} form:"{{$field.JSONFieldName}}" binding:"required,min=1"`{{end}}{{ if not $field.PrimaryKeyArgName }}{{$field.GoFieldName}} {{$field.GoFieldType}}  `{{$field.JSONAnnotation}} form:"{{$field.JSONFieldName}}"`{{end}}{{end}}
+}
+
+type {{.StructName}}UpdateResp struct {
+	{{range $field := .TableInfo.CodeFields}}
+    {{$field.GoFieldName}} {{$field.GoFieldType}}  `{{$field.JSONAnnotation}}`{{end}}
+}
+{{end}}

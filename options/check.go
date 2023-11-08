@@ -46,6 +46,12 @@ func CheckOptions() bool {
 	if ApiPackageName == nil || *ApiPackageName == "" {
 		*ApiPackageName = "api"
 	}
+	if ServicePackageName == nil || *ServicePackageName == "" {
+		*ServicePackageName = "service"
+	}
+	if ControllerPackageName == nil || *ControllerPackageName == "" {
+		*ControllerPackageName = "controller"
+	}
 
 	if *MappingFileName != "" {
 		err := dbmeta.LoadMappings(*MappingFileName, *Verbose)

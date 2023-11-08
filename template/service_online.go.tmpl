@@ -1,0 +1,11 @@
+{{define "service_online.go.tmpl"}}
+func {{ .StructName}}Online(ctx context.Context, req *{{.apiPackageName}}.{{ .StructName}}OnlineReq) (*{{.apiPackageName}}.{{ .StructName}}OnlineResp, error) {
+    _, _, err := {{.daoPackageName}}.Online{{.StructName}}(ctx,{{range $field := .TableInfo.CodeFields}}{{ if $field.PrimaryKeyArgName }} req.{{$field.GoFieldName}}, {{end}}{{end -}}req.OnlineStatus)
+    if err != nil {
+        return nil, err
+    }
+
+    result := &api.{{ .StructName}}OnlineResp{}
+    return result, nil
+}
+{{end}}

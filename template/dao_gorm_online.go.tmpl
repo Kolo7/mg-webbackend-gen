@@ -2,7 +2,7 @@
 // Online{{.StructName}} is a function to online or offline a single record from {{.TableName}} table in the {{.DatabaseName}} database
 // error - ErrNotFound, db record for id not found
 // error - ErrUpdateFailed, db meta data copy failed or db.Save call failed
-func Online{{.StructName}}(ctx context.Context, {{range $field := .TableInfo.CodeFields}} {{ if $field.PrimaryKeyArgName }} {{$field.PrimaryKeyArgName}} {{$field.GoFieldType}},{{end}}{{end -}}updated *{{.modelPackageName}}.{{.StructName}}) (result *{{.modelPackageName}}.{{.StructName}}, RowsAffected int64, err error) {
+func Online{{.StructName}}(ctx context.Context, {{range $field := .TableInfo.CodeFields}} {{ if $field.PrimaryKeyArgName }} {{$field.PrimaryKeyArgName}} {{$field.GoFieldType}},{{end}}{{end -}}onlineStatus int32) (result *{{.modelPackageName}}.{{.StructName}}, RowsAffected int64, err error) {
 
    result = &{{.modelPackageName}}.{{.StructName}}{}
    db := DB.First(result,{{range $field := .TableInfo.CodeFields}} {{ if $field.PrimaryKeyArgName }} "{{$field.ColumnMeta.Name}} = ?",{{$field.PrimaryKeyArgName}},{{end}}{{end -}})
@@ -10,9 +10,7 @@ func Online{{.StructName}}(ctx context.Context, {{range $field := .TableInfo.Cod
       return nil, -1, ErrNotFound
    }
 
-   if err = Copy(result, updated); err != nil {
-      return nil, -1, ErrUpdateFailed
-   }
+   result.OnlineStatus = onlineStatus
 
    db = db.Save(result)
    if err = db.Error; err != nil  {

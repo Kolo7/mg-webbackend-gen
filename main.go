@@ -117,6 +117,12 @@ func initialize(conf *dbmeta.Config) {
 	conf.APIPackageName = *options.ApiPackageName
 	conf.APIFQPN = *options.Module + "/" + *options.ApiPackageName
 
+	conf.ServicePackageName = *options.ServicePackageName
+	conf.ServiceFQPN = *options.Module + "/" + *options.ServicePackageName
+
+	conf.ControllerPackageName = *options.ControllerPackageName
+	conf.ControllerFQPN = *options.Module + "/" + *options.ControllerPackageName
+
 	conf.FileNamingTemplate = *options.FileNamingTemplate
 	conf.ModelNamingTemplate = *options.ModelNamingTemplate
 	conf.FieldNamingTemplate = *options.FieldNamingTemplate

@@ -33,6 +33,10 @@ func Generate(conf *dbmeta.Config) error {
 	if err != nil {
 		return err
 	}
+	err = generateController(conf)
+	if err != nil {
+		return err
+	}
 	if *options.RunGoFmt {
 		GoFmt(conf.OutDir)
 	}
@@ -192,16 +196,49 @@ func generateService(conf *dbmeta.Config) error {
 	return nil
 }
 
-func generateAPI(conf *dbmeta.Config) error {
-	if !*options.RestAPIGenerate {
+func generateController(conf *dbmeta.Config) error {
+	if !*options.ControllerGenerate {
 		return nil
 	}
 	var (
 		err            error
 		controllerTmpl *dbmeta.GenTemplate
-		apiDir         = filepath.Join(*options.OutDir, *options.ApiPackageName)
+		apiDir         = filepath.Join(*options.OutDir, *options.ControllerPackageName)
 	)
-	if controllerTmpl, err = config.LoadTemplate("api.go.tmpl"); err != nil {
+	if controllerTmpl, err = config.LoadTemplate("controller.go.tmpl"); err != nil {
+		fmt.Print(options.Au.Red(fmt.Sprintf("Error loading template %v\n", err)))
+		return err
+	}
+
+	for tableName, tableInfo := range options.TableInfos {
+		if len(tableInfo.Fields) == 0 {
+			if *options.Verbose {
+				fmt.Printf("[%d] Table: %s - No Fields Available\n", tableInfo.Index, tableName)
+			}
+			continue
+		}
+		modelInfo := conf.CreateContextForTableFile(tableInfo)
+
+		controllerFile := filepath.Join(apiDir, CreateGoSrcFileName(tableName))
+		err = conf.WriteTemplate(controllerTmpl, modelInfo, controllerFile)
+		if err != nil {
+			fmt.Print(options.Au.Red(fmt.Sprintf("Error writing file: %v\n", err)))
+			return err
+		}
+	}
+	return nil
+}
+
+func generateAPI(conf *dbmeta.Config) error {
+	if !*options.RestAPIGenerate {
+		return nil
+	}
+	var (
+		err     error
+		apiTmpl *dbmeta.GenTemplate
+		apiDir  = filepath.Join(*options.OutDir, *options.ApiPackageName)
+	)
+	if apiTmpl, err = config.LoadTemplate("api.go.tmpl"); err != nil {
 		fmt.Print(options.Au.Red(fmt.Sprintf("Error loading template %v\n", err)))
 		return err
 	}
@@ -216,7 +253,7 @@ func generateAPI(conf *dbmeta.Config) error {
 		modelInfo := conf.CreateContextForTableFile(tableInfo)
 
 		restFile := filepath.Join(apiDir, CreateGoSrcFileName(tableName))
-		err = conf.WriteTemplate(controllerTmpl, modelInfo, restFile)
+		err = conf.WriteTemplate(apiTmpl, modelInfo, restFile)
 		if err != nil {
 			fmt.Print(options.Au.Red(fmt.Sprintf("Error writing file: %v\n", err)))
 			return err

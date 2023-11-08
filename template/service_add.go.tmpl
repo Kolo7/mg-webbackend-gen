@@ -1,3 +1,17 @@
 {{define "service_add.go.tmpl"}}
+func {{ .StructName}}Add(ctx context.Context, req *{{.apiPackageName}}.{{ .StructName}}AddReq) (*{{.apiPackageName}}.{{ .StructName}}AddResp, error) {
 
+    {{.StructName | toLowerCamelCase}} := &{{.modelPackageName}}.{{ .StructName}}{
+        {{range $field := .TableInfo.CodeFields}}{{ if not $field.PrimaryKeyArgName }}{{ $field.GoFieldName}}: req.{{ $field.GoFieldName}},{{end}}{{end}}
+    }
+    record, _, err := {{.daoPackageName}}.Add{{.StructName}}(ctx, {{.StructName | toLowerCamelCase}})
+    if err != nil {
+        return nil, err
+    }
+
+    result := &api.{{ .StructName}}AddResp{
+        {{range $field := .TableInfo.CodeFields}}{{ if $field.PrimaryKeyArgName }}{{ $field.GoFieldName}}: record.{{ $field.GoFieldName}},{{end}}{{end}}
+    }
+    return result, nil
+}
 {{end}}

@@ -1,0 +1,15 @@
+package {{.controllerPackageName}}
+
+import (
+    "net/http"
+    
+    "{{.apiFQPN}}"
+	"{{.serviceFQPN}}"
+    "github.com/gin-gonic/gin"   
+)
+{{$tableInfo := .}}{{template "controller_getall.go.tmpl" .}}
+{{template "controller_get.go.tmpl" .}}
+{{template "controller_add.go.tmpl" .}}
+{{template "controller_update.go.tmpl" .}}
+{{template "controller_delete.go.tmpl" .}}
+{{range $field := .TableInfo.CodeFields}}{{if eq $field.GoFieldName "OnlineStatus"}}{{template "controller_online.go.tmpl" $tableInfo}}{{end}}{{end}}

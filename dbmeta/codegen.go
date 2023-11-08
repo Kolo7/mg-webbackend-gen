@@ -138,7 +138,8 @@ func (c *Config) GetTemplate(genTemplate *GenTemplate) (*template.Template, erro
 		baseName == "code_dao_sqlx.md.tmpl" ||
 		baseName == "code_dao_gorm.md.tmpl" ||
 		baseName == "code_http.md.tmpl" ||
-		baseName == "service.go.tmpl" {
+		baseName == "service.go.tmpl" ||
+		baseName == "controller.go.tmpl" {
 
 		operations := []string{"add", "delete", "get", "getall", "update", "online"}
 		for _, op := range operations {
@@ -164,6 +165,9 @@ func (c *Config) GetTemplate(genTemplate *GenTemplate) (*template.Template, erro
 			}
 			if baseName == "service.go.tmpl" {
 				filename = fmt.Sprintf("service_%s.go.tmpl", op)
+			}
+			if baseName == "controller.go.tmpl" {
+				filename = fmt.Sprintf("controller_%s.go.tmpl", op)
 			}
 
 			var subTemplate *GenTemplate
@@ -602,8 +606,8 @@ func (c *Config) WriteTemplate(genTemplate *GenTemplate, data map[string]interfa
 	if err != nil {
 		return fmt.Errorf("error in rendering %s: %s", genTemplate.Name, err.Error())
 	}
-	// fileContents := buf.Bytes()
-	fileContents, err := c.format(genTemplate, buf.Bytes(), outputFile)
+	fileContents := buf.Bytes()
+	// fileContents, err := c.format(genTemplate, buf.Bytes(), outputFile)
 	if err != nil {
 		return fmt.Errorf("error writing %s - error: %v", outputFile, err)
 	}

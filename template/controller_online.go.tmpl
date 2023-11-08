@@ -1,0 +1,16 @@
+{{define "controller_online.go.tmpl"}}
+func {{ .StructName}}Online(c *gin.Context) {
+    req := {{.apiPackageName}}.{{ .StructName}}OnlineReq{}
+    if err := c.ShouldBind(&req); err != nil {
+        c.JSON(http.StatusOK, err)
+        return
+    }
+
+    results, err := service.{{ .StructName}}Online(c.Request.Context(), &req)
+    if err != nil {
+        c.JSON(http.StatusOK, err)
+        return
+    }
+    c.JSON(http.StatusOK, results)
+}
+{{end}}

@@ -1,0 +1,16 @@
+{{define "controller_getall.go.tmpl"}}
+func {{ .StructName}}GetAll(c *gin.Context) {
+    req := {{.apiPackageName}}.{{ .StructName}}GetAllReq{}
+    if err := c.ShouldBind(&req); err != nil {
+        c.JSON(http.StatusOK, err)
+        return
+    }
+
+    results, err := service.{{ .StructName}}GetAll(c.Request.Context(), &req)
+    if err != nil {
+        c.JSON(http.StatusOK, err)
+        return
+    }
+    c.JSON(http.StatusOK, results)
+}
+{{end}}

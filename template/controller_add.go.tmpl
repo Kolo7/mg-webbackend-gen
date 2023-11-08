@@ -1,0 +1,16 @@
+{{define "controller_add.go.tmpl"}}
+func {{ .StructName}}Add(c *gin.Context) {
+    req := {{.apiPackageName}}.{{ .StructName}}AddReq{}
+    if err := c.ShouldBind(&req); err != nil {
+        c.JSON(http.StatusOK, err)
+        return
+    }
+
+    results, err := service.{{ .StructName}}Add(c.Request.Context(), &req)
+    if err != nil {
+        c.JSON(http.StatusOK, err)
+        return
+    }
+    c.JSON(http.StatusOK, results)
+}
+{{end}}

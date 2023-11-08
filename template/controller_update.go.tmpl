@@ -1,0 +1,16 @@
+{{define "controller_update.go.tmpl"}}
+func {{ .StructName}}Update(c *gin.Context) {
+    req := {{.apiPackageName}}.{{ .StructName}}UpdateReq{}
+    if err := c.ShouldBind(&req); err != nil {
+        c.JSON(http.StatusOK, err)
+        return
+    }
+
+    results, err := service.{{ .StructName}}Update(c.Request.Context(), &req)
+    if err != nil {
+        c.JSON(http.StatusOK, err)
+        return
+    }
+    c.JSON(http.StatusOK, results)
+}
+{{end}}

@@ -25,11 +25,6 @@ func main() {
 	// 从包体取出模板
 	options.BaseTemplates = &embedFiles
 
-	// 检查必要参数设置
-	if !options.CheckOptions() {
-		return
-	}
-
 	// 初始化数据库
 	err := database.InitSchema()
 	if err != nil {
@@ -39,7 +34,15 @@ func main() {
 	// 初始化config，用于后续代码生成
 	conf := dbmeta.NewConfig(config.LoadTemplate)
 	initialize(conf)
-
+	err = loadDefaultDBMappings(conf)
+	if err != nil {
+		fmt.Print(options.Au.Red(fmt.Sprintf("Error processing default mapping file error: %v\n", err)))
+		return
+	}
+	// 检查必要参数设置
+	if !options.CheckOptions() {
+		return
+	}
 	tableName, err := database.GetTableNames()
 	if err != nil {
 		return
@@ -130,4 +133,19 @@ func initialize(conf *dbmeta.Config) {
 	conf.JSONNameFormat = strings.ToLower(conf.JSONNameFormat)
 	conf.XMLNameFormat = strings.ToLower(conf.XMLNameFormat)
 	conf.ProtobufNameFormat = strings.ToLower(conf.ProtobufNameFormat)
+}
+
+func loadDefaultDBMappings(conf *dbmeta.Config) error {
+	var err error
+	var content []byte
+	content, err = options.BaseTemplates.ReadFile("template/mapping.json")
+	if err != nil {
+		return err
+	}
+
+	err = dbmeta.ProcessMappings("internal", content, conf.Verbose)
+	if err != nil {
+		return err
+	}
+	return nil
 }

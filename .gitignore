@@ -41,5 +41,8 @@ example/grpc
 example/apis/
 example/daos/
 example/models/
+example/server/
+example/service/
+example/controller/
 tests/
 .env

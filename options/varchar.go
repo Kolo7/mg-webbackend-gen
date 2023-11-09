@@ -52,7 +52,7 @@ var (
 	AddDBAnnotation = goopt.Flag([]string{"--db"}, []string{}, "Add db annotations (tags)", "")
 	//UseGureguTypes = goopt.Flag([]string{"--guregu"}, []string{}, "Add guregu null types", "")
 
-	//CopyTemplates    = goopt.Flag([]string{"--copy-templates"}, []string{}, "Copy regeneration templates to project directory", "")
+	CopyTemplates = goopt.Flag([]string{"--copy-templates"}, []string{}, "Copy regeneration templates to project directory", "")
 	//ModGenerate      = goopt.Flag([]string{"--mod"}, []string{}, "Generate go.mod in output dir", "")
 	//MakefileGenerate = goopt.Flag([]string{"--makefile"}, []string{}, "Generate Makefile in output dir", "")
 	//ServerGenerate  = goopt.Flag([]string{"--server"}, []string{}, "Generate server app output dir", "")

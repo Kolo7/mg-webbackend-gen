@@ -9,6 +9,7 @@ import (
 
 	"github.com/kolo7/mg-webbackend-gen/config"
 	"github.com/kolo7/mg-webbackend-gen/dbmeta"
+	"github.com/kolo7/mg-webbackend-gen/fileutils"
 	"github.com/kolo7/mg-webbackend-gen/options"
 )
 
@@ -37,6 +38,11 @@ func Generate(conf *dbmeta.Config) error {
 	if err != nil {
 		return err
 	}
+
+	if err = copyTemplatesToTarget(); err != nil {
+		return err
+	}
+
 	if *options.RunGoFmt {
 		GoFmt(conf.OutDir)
 	}
@@ -49,6 +55,8 @@ func MkDirAll() error {
 	serviceDir := filepath.Join(*options.OutDir, *options.ServicePackageName)
 	controllerDir := filepath.Join(*options.OutDir, *options.ControllerPackageName)
 	apiDir := filepath.Join(*options.OutDir, *options.ApiPackageName)
+	templatesDir := filepath.Join(*options.OutDir, "templates")
+
 	err := os.MkdirAll(*options.OutDir, 0777)
 	if err != nil && !*options.Overwrite {
 		fmt.Print(options.Au.Red(fmt.Sprintf("unable to create outDir: %s error: %v\n", *options.OutDir, err)))
@@ -84,6 +92,14 @@ func MkDirAll() error {
 		err = os.MkdirAll(controllerDir, 0777)
 		if err != nil && !*options.Overwrite {
 			fmt.Print(options.Au.Red(fmt.Sprintf("unable to create daoDir: %s error: %v\n", daoDir, err)))
+			return err
+		}
+	}
+
+	if *options.CopyTemplates {
+		err = os.MkdirAll(templatesDir, 0777)
+		if err != nil && !*options.Overwrite {
+			fmt.Print(options.Au.Red(fmt.Sprintf("unable to create templatesDir: %s error: %v\n", templatesDir, err)))
 			return err
 		}
 	}
@@ -290,4 +306,21 @@ func GoFmt(codeDir string) (string, error) {
 	}
 
 	return string(stdoutStderr), nil
+}
+
+func copyTemplatesToTarget() (err error) {
+	if !*options.CopyTemplates {
+		return nil
+	}
+	templatesDir := filepath.Join(*options.OutDir, "templates")
+	fmt.Printf("Saving templates to %s\n", templatesDir)
+	srcDir := "template"
+	if options.TemplateDir != nil && *options.TemplateDir != "" {
+		srcDir = *options.TemplateDir
+	}
+	err = fileutils.SaveAssets(srcDir, templatesDir, options.BaseTemplates)
+	if err != nil {
+		fmt.Print(options.Au.Red(fmt.Sprintf("Error saving: %v\n", err)))
+	}
+	return nil
 }

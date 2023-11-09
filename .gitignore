@@ -44,5 +44,6 @@ example/models/
 example/server/
 example/service/
 example/controller/
+example/pkg/
 tests/
 .env

@@ -67,7 +67,10 @@ var (
 	ServerScheme = goopt.String([]string{"--scheme"}, "http", "scheme for server url")
 	ServerHost   = goopt.String([]string{"--host"}, "localhost", "host for server")
 	ServerPort   = goopt.Int([]string{"--port"}, 8080, "port for server")
-	//SwaggerVersion      = goopt.String([]string{"--swagger_version"}, "1.0", "swagger version")
+
+	DocGenerate = goopt.Flag([]string{"--generate-doc"}, []string{}, "Generate markdown doc", "")
+
+	// SwaggerVersion      = goopt.String([]string{"--swagger_version"}, "1.0", "swagger version")
 	//SwaggerBasePath     = goopt.String([]string{"--swagger_path"}, "/", "swagger base path")
 	//SwaggerTos          = goopt.String([]string{"--swagger_tos"}, "", "swagger tos url")
 	//SwaggerContactName  = goopt.String([]string{"--swagger_contact_name"}, "Me", "swagger contact name")

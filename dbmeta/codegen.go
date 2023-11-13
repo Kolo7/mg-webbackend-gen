@@ -123,6 +123,8 @@ func (c *Config) GetTemplate(genTemplate *GenTemplate) (*template.Template, erro
 		"pwd":                        Pwd,
 		"config":                     c.DisplayConfig,
 		"insertFragment":             c.insertFragment,
+		"formatTime":                 utils.FormatTime,
+		"comment":                    utils.Comment,
 	}
 
 	baseName := filepath.Base(genTemplate.Name)
@@ -613,6 +615,85 @@ func (c *Config) WriteTemplate(genTemplate *GenTemplate, data map[string]interfa
 	}
 
 	err = ioutil.WriteFile(outputFile, fileContents, 0777)
+	if err != nil {
+		return fmt.Errorf("error writing %s - error: %v", outputFile, err)
+	}
+
+	if c.Verbose {
+		fmt.Printf("writing %s\n", outputFile)
+	}
+	return nil
+}
+
+func (c *Config) AppendWriteTemplate(genTemplate *GenTemplate, data map[string]interface{}, outputFile string) error {
+	//fmt.Printf("WriteTemplate %s\n", outputFile)
+
+	if !c.Overwrite && Exists(outputFile) {
+		fmt.Printf("not overwriting %s\n", outputFile)
+		return nil
+	}
+
+	for key, value := range c.ContextMap {
+		data[key] = value
+	}
+
+	dir := filepath.Dir(outputFile)
+	parent := filepath.Base(dir)
+
+	data["File"] = outputFile
+	data["Dir"] = dir
+	data["Parent"] = parent
+
+	data["DatabaseName"] = c.SQLDatabase
+	data["module"] = c.Module
+
+	data["modelFQPN"] = c.ModelFQPN
+	data["modelPackageName"] = c.ModelPackageName
+
+	data["daoFQPN"] = c.DaoFQPN
+	data["daoPackageName"] = c.DaoPackageName
+
+	data["serviceFQPN"] = c.ServiceFQPN
+	data["servicePackageName"] = c.ServicePackageName
+
+	data["controllerFQPN"] = c.ControllerFQPN
+	data["controllerPackageName"] = c.ControllerPackageName
+
+	data["UseGuregu"] = c.UseGureguTypes
+
+	data["apiFQPN"] = c.APIFQPN
+	data["apiPackageName"] = c.APIPackageName
+
+	data["sqlType"] = c.SQLType
+	data["sqlConnStr"] = c.SQLConnStr
+	data["serverPort"] = c.ServerPort
+	data["serverHost"] = c.ServerHost
+	data["serverScheme"] = c.ServerScheme
+	data["serverListen"] = c.ServerListen
+	data["SwaggerInfo"] = c.Swagger
+	data["outDir"] = c.OutDir
+	data["Config"] = c
+
+	rt, err := c.GetTemplate(genTemplate)
+	if err != nil {
+		return fmt.Errorf("error in loading %s template, error: %v", genTemplate.Name, err)
+	}
+	var buf bytes.Buffer
+	err = rt.Execute(&buf, data)
+	if err != nil {
+		return fmt.Errorf("error in rendering %s: %s", genTemplate.Name, err.Error())
+	}
+	fileContents := buf.Bytes()
+	if err != nil {
+		return fmt.Errorf("error writing %s - error: %v", outputFile, err)
+	}
+
+	outFile, err := os.OpenFile(outputFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("error writing %s - error: %v", outputFile, err)
+	}
+	defer outFile.Close()
+	_, err = outFile.Write(fileContents)
 	if err != nil {
 		return fmt.Errorf("error writing %s - error: %v", outputFile, err)
 	}

@@ -1,0 +1,151 @@
+### {{.StructName | toLowerCamelCase}}
+
+####  get all
+__URL__
+
+/{{.StructName | toLowerCamelCase}}/getall
+
+__method__
+
+GET
+
+__params__
+
+|参数名|参数类型|是否必须|备注|
+|------|------|--------|------|
+|   page    |   int    |     否     |    页码, 默认1    |
+|   pageNum    |   int    |     否     |    单页数量, 默认10    |
+
+__response__
+
+```json
+{
+    "code": 200,
+    "msg": "success",
+    "data": {
+        "total": 10,
+        "list": {
+            {{- range $field := .TableInfo.CodeFields }}
+            "{{ $field.JSONFieldName}}": {{ if eq $field.GoFieldType "string"  }}"{{ $field.FakeData}}"{{else if (eq $field.GoFieldType "time.Time")}}"{{ $field.FakeData | formatTime}}"{{else}}{{ $field.FakeData}}{{end}},{{end}}
+        }
+    }
+}
+```
+
+
+#### get
+
+__URL__
+
+/{{.StructName | toLowerCamelCase}}/get
+
+__method__
+
+GET
+
+__params__
+
+|参数名|参数类型|是否必须|备注|
+|------|------|--------|------|
+|   id    |   int    |     是     |   /{{.StructName}}id     |
+
+__response__
+
+```json
+{
+    "code": 200,
+    "msg": "success",
+    "data": {
+        {{- range $field := .TableInfo.CodeFields }}
+        "{{ $field.JSONFieldName}}": {{ if eq $field.GoFieldType "string"  }}"{{ $field.FakeData}}"{{else if (eq $field.GoFieldType "time.Time")}}"{{ $field.FakeData | formatTime}}"{{else}}{{ $field.FakeData}}{{end}}, // {{$field.ColumnMeta | comment}}{{end}}    
+        
+    }
+}
+```
+
+#### add
+
+__URL__
+
+/{{.StructName | toLowerCamelCase}}/add
+
+__method__
+
+POST
+
+__params__
+
+|参数名|参数类型|是否必须|备注|
+|------|------|--------|------|
+{{- range $field := .TableInfo.CodeFields }}
+{{- if not $field.PrimaryKeyArgName }}
+|   {{ $field.JSONFieldName}}    |   {{ $field.SQLMapping.JSONType}}    |     否     |   {{$field.ColumnMeta | comment}}     |
+{{- end -}}{{- end -}}
+__response__
+
+```json
+{
+    "code": 200,
+    "msg": "success",
+    "data": {
+        {{- range $field := .TableInfo.CodeFields }}
+        {{- if $field.PrimaryKeyArgName }}
+        "{{ $field.JSONFieldName}}": {{ if eq $field.GoFieldType "string"  }}"{{ $field.FakeData}}"{{else if (eq $field.GoFieldType "time.Time")}}"{{ $field.FakeData | formatTime}}"{{else}}{{ $field.FakeData}}{{end}}{{end}}{{end}}
+    }
+}
+```
+
+#### update
+
+__URL__
+
+/{{.StructName | toLowerCamelCase}}/update
+
+__method__
+
+POST
+
+__params__
+
+|参数名|参数类型|是否必须|备注|
+|------|------|--------|------|
+{{- range $field := .TableInfo.CodeFields }}
+|   {{ $field.JSONFieldName}}    |   {{ $field.SQLMapping.JSONType}}    |     {{- if $field.PrimaryKeyArgName -}}是{{else}}否{{- end -}}     |   {{$field.ColumnMeta | comment}}     |
+{{- end -}}
+__response__
+
+```json
+{
+    "code": 200,
+    "msg": "success",
+    "data": {}
+}
+```
+
+#### delete
+
+__URL__
+
+/{{.StructName | toLowerCamelCase}}/delete
+
+__method__
+
+POST
+
+__params__
+
+|参数名|参数类型|是否必须|备注|
+|------|------|--------|------|
+{{- range $field := .TableInfo.CodeFields }}
+|   {{ $field.JSONFieldName}}    |   {{ $field.SQLMapping.JSONType}}    |     {{- if $field.PrimaryKeyArgName -}}是{{else}}否{{- end -}}     |   {{$field.ColumnMeta | comment}}     |
+{{- end -}}
+__response__
+
+```json
+{
+    "code": 200,
+    "msg": "success",
+    "data": {}
+}
+```
+

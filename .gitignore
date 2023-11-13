@@ -24,26 +24,7 @@ gen
 #
 # only store sample db in git
 #
-example/.gitignore
-example/README.md
-example/api/
-example/app/
-example/dao/
-example/go.mod
-example/model/
-example/Makefile
-example/docs/
-example/templates/
-example/go.sum
+example/*
 custom/test/
-example/*.proto
-example/grpc
-example/apis/
-example/daos/
-example/models/
-example/server/
-example/service/
-example/controller/
-example/pkg/
 tests/
 .env

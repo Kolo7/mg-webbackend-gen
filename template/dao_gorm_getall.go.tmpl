@@ -21,8 +21,7 @@ func GetAll{{.StructName}}(ctx context.Context, page, pagesize int, order string
 	}
 
 	if err = resultOrm.Find(&results).Error; err != nil {
-	    err = ErrNotFound
-		return nil, -1, err
+		return nil, -1, errors.Wrap(ErrNotFound, err.Error())
 	}
 
 	return results, totalRows, nil

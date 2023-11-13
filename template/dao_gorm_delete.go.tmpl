@@ -7,12 +7,12 @@ func Delete{{.StructName}}(ctx context.Context,{{range $field := .TableInfo.Code
     record := &{{.modelPackageName}}.{{.StructName}}{}
     db := DB.First(record, {{range $field := .TableInfo.CodeFields}} {{ if $field.PrimaryKeyArgName }} "{{$field.ColumnMeta.Name}} = ?",{{$field.PrimaryKeyArgName}},{{end}}{{end}})
     if db.Error != nil {
-        return -1, ErrNotFound
+        return -1, errors.Wrap(ErrNotFound, err.Error())
     }
 
     db = db.Delete(record)
     if err = db.Error; err != nil {
-        return -1, ErrDeleteFailed
+        return -1, errors.Wrap(ErrDeleteFailed, err.Error())
     }
 
    return db.RowsAffected, nil

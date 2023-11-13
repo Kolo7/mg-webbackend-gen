@@ -43,6 +43,11 @@ func Generate(conf *dbmeta.Config) error {
 		return err
 	}
 
+	err = generateDoc(conf)
+	if err != nil {
+		return err
+	}
+
 	if *options.RunGoFmt {
 		GoFmt(conf.OutDir)
 	}
@@ -56,6 +61,7 @@ func MkDirAll() error {
 	controllerDir := filepath.Join(*options.OutDir, *options.ControllerPackageName)
 	apiDir := filepath.Join(*options.OutDir, *options.ApiPackageName)
 	templatesDir := filepath.Join(*options.OutDir, "templates")
+	docDir := filepath.Join(*options.OutDir, "doc")
 
 	err := os.MkdirAll(*options.OutDir, 0777)
 	if err != nil && !*options.Overwrite {
@@ -100,6 +106,14 @@ func MkDirAll() error {
 		err = os.MkdirAll(templatesDir, 0777)
 		if err != nil && !*options.Overwrite {
 			fmt.Print(options.Au.Red(fmt.Sprintf("unable to create templatesDir: %s error: %v\n", templatesDir, err)))
+			return err
+		}
+	}
+
+	if *options.DocGenerate {
+		err = os.MkdirAll(docDir, 0777)
+		if err != nil && !*options.Overwrite {
+			fmt.Print(options.Au.Red(fmt.Sprintf("unable to create docDir: %s error: %v\n", docDir, err)))
 			return err
 		}
 	}
@@ -270,6 +284,55 @@ func generateAPI(conf *dbmeta.Config) error {
 
 		restFile := filepath.Join(apiDir, CreateGoSrcFileName(tableName))
 		err = conf.WriteTemplate(apiTmpl, modelInfo, restFile)
+		if err != nil {
+			fmt.Print(options.Au.Red(fmt.Sprintf("Error writing file: %v\n", err)))
+			return err
+		}
+	}
+	return nil
+}
+
+func generateDoc(conf *dbmeta.Config) error {
+	if !*options.DocGenerate {
+		return nil
+	}
+	var (
+		err         error
+		docTmpl     *dbmeta.GenTemplate
+		docInitTmpl *dbmeta.GenTemplate
+		docDir      = filepath.Join(*options.OutDir, "doc")
+	)
+	if docTmpl, err = config.LoadTemplate("doc.md.tmpl"); err != nil {
+		fmt.Print(options.Au.Red(fmt.Sprintf("Error loading template %v\n", err)))
+		return err
+	}
+	if docInitTmpl, err = config.LoadTemplate("doc_init.md.tmpl"); err != nil {
+		fmt.Print(options.Au.Red(fmt.Sprintf("Error loading template %v\n", err)))
+		return err
+	}
+
+	docFile := filepath.Join(docDir, "doc.md")
+	// 删除
+	err = os.Remove(docFile)
+	if err != nil {
+		fmt.Print(options.Au.Red(fmt.Sprintf("Error remove file: %v\n", err)))
+		return err
+	}
+	err = conf.AppendWriteTemplate(docInitTmpl, map[string]interface{}{}, docFile)
+	if err != nil {
+		fmt.Print(options.Au.Red(fmt.Sprintf("Error writing file: %v\n", err)))
+		return err
+	}
+	for tableName, tableInfo := range options.TableInfos {
+		if len(tableInfo.Fields) == 0 {
+			if *options.Verbose {
+				fmt.Printf("[%d] Table: %s - No Fields Available\n", tableInfo.Index, tableName)
+			}
+			continue
+		}
+		modelInfo := conf.CreateContextForTableFile(tableInfo)
+
+		err = conf.AppendWriteTemplate(docTmpl, modelInfo, docFile)
 		if err != nil {
 			fmt.Print(options.Au.Red(fmt.Sprintf("Error writing file: %v\n", err)))
 			return err

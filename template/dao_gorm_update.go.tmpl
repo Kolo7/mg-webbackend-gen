@@ -7,16 +7,16 @@ func Update{{.StructName}}(ctx context.Context, {{range $field := .TableInfo.Cod
    result = &{{.modelPackageName}}.{{.StructName}}{}
    db := DB.First(result,{{range $field := .TableInfo.CodeFields}} {{ if $field.PrimaryKeyArgName }} "{{$field.ColumnMeta.Name}} = ?",{{$field.PrimaryKeyArgName}},{{end}}{{end -}})
    if err = db.Error; err != nil {
-      return nil, -1, ErrNotFound
+      return nil, -1, errors.Wrap(ErrNotFound, err.Error())
    }
 
    if err = Copy(result, updated); err != nil {
-      return nil, -1, ErrUpdateFailed
+      return nil, -1, errors.Wrap(ErrUpdateFailed, err.Error())
    }
 
    db = db.Save(result)
    if err = db.Error; err != nil  {
-      return nil, -1, ErrUpdateFailed
+      return nil, -1, errors.Wrap(ErrUpdateFailed, err.Error())
    }
 
    return result, db.RowsAffected, nil

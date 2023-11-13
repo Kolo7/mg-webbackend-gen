@@ -8,6 +8,8 @@ import (
 	"{{.modelFQPN}}"
 
     {{if .UseGuregu}} "github.com/guregu/null" {{end}}
+    "github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
     "github.com/google/uuid"
 )
 
@@ -15,6 +17,7 @@ var (
     _ = time.Second
     {{if .UseGuregu}} _ = null.Bool{} {{end}}
     _ = uuid.UUID{}
+    _ mysql.Config
     _ sql.Result
 )
 

@@ -606,8 +606,8 @@ func (c *Config) WriteTemplate(genTemplate *GenTemplate, data map[string]interfa
 	if err != nil {
 		return fmt.Errorf("error in rendering %s: %s", genTemplate.Name, err.Error())
 	}
-	fileContents := buf.Bytes()
-	// fileContents, err := c.format(genTemplate, buf.Bytes(), outputFile)
+	// fileContents := buf.Bytes()
+	fileContents, err := c.format(genTemplate, buf.Bytes(), outputFile)
 	if err != nil {
 		return fmt.Errorf("error writing %s - error: %v", outputFile, err)
 	}

@@ -1,10 +1,8 @@
 package {{.daoPackageName}}
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
-
 
 	"github.com/jinzhu/gorm"
 )
@@ -34,30 +32,38 @@ var (
 	DB           *gorm.DB
 )
 
-// Copy a src struct into a destination struct
-func Copy(dst interface{}, src interface{}) error {
-	dstV := reflect.Indirect(reflect.ValueOf(dst))
-	srcV := reflect.Indirect(reflect.ValueOf(src))
+// structToNestedMap 将简单结构体转化为map、sclice嵌套结构
+// 注意: 以下情况会panic
+// 转化包含循环引用的结构体
+// 转化包含无法在map中使用的类型(函数、通道、复数)结构体
+func structToNestedMap(obj interface{}) interface{} {
+	objValue := reflect.ValueOf(obj)
+	objType := objValue.Type()
 
-	if !dstV.CanAddr() {
-		return errors.New("copy to value is unaddressable")
-	}
+	switch objType.Kind() {
+	case reflect.Struct:
+		result := make(map[string]interface{})
 
-	if srcV.Type() != dstV.Type() {
-		return errors.New("different types can not be copied")
-	}
-
-	for i := 0; i < dstV.NumField(); i++ {
-		f := srcV.Field(i)
-		if !isZeroOfUnderlyingType(f.Interface()) {
-			dstV.Field(i).Set(f)
+		for i := 0; i < objType.NumField(); i++ {
+			field := objType.Field(i)                     // 获取字段的元数据
+			value := objValue.Field(i).Interface()        // 获取字段的值
+			result[field.Name] = structToNestedMap(value) // 递归调用 structToNestedMap 处理字段值，并将结果存入 map
 		}
+
+		return result
+
+	case reflect.Slice, reflect.Array:
+		result := make([]interface{}, objValue.Len())
+
+		for i := 0; i < objValue.Len(); i++ { // 遍历切片或数组
+			value := objValue.Index(i).Interface()
+			result[i] = structToNestedMap(value)
+		}
+
+		return result
+	case reflect.Ptr: // 如果是指针
+		return structToNestedMap(objValue.Elem().Interface())
+	default:
+		return obj
 	}
-
-	return nil
-}
-
-
-func isZeroOfUnderlyingType(x interface{}) bool {
-	return x == nil || reflect.DeepEqual(x, reflect.Zero(reflect.TypeOf(x)).Interface())
 }

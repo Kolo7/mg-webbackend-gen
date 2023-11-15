@@ -6,11 +6,11 @@ func Online{{.StructName}}(ctx context.Context, {{range $field := .TableInfo.Cod
    updated:=&{{.modelPackageName}}.{{.StructName}}{ {{range $field := .TableInfo.CodeFields}} {{ if $field.PrimaryKeyArgName }}{{$field.GoFieldName}}:{{$field.PrimaryKeyArgName}}{{end}}{{end}}, OnlineStatus: onlineStatus }
    result := DB.Updates(updated)
    err := result.Error
-   if errors.Is(err, gorm.ErrRecordNotFound) || result.RowsAffected == 0 {
-		return nil, -1, errors.Wrap(ErrNotFound, err.Error())
-	}
 	if err != nil {
 		return nil, -1, errors.Wrap(ErrUpdateFailed, err.Error())
+	}
+   if result.RowsAffected == 0 {
+		return nil, -1, ErrNotFound
 	}
 
    return updated, result.RowsAffected, nil

@@ -6,11 +6,11 @@ func Update{{.StructName}}(ctx context.Context, {{range $field := .TableInfo.Cod
    updated.{{range $field := .TableInfo.CodeFields}} {{ if $field.PrimaryKeyArgName }}{{$field.GoFieldName}}{{end}}{{end}} = {{range $field := .TableInfo.CodeFields}} {{ if $field.PrimaryKeyArgName }}{{$field.PrimaryKeyArgName}}{{end}}{{end}}
    result := DB.Model(updated).Updates(structToNestedMap(updated))
    err := result.Error
-   if errors.Is(err, gorm.ErrRecordNotFound) || result.RowsAffected == 0 {
-		return nil, -1, errors.Wrap(ErrNotFound, err.Error())
-	}
    if err != nil {
 		return nil, -1, errors.Wrap(ErrUpdateFailed, err.Error())
+	}
+   if result.RowsAffected == 0 {
+		return nil, -1, ErrNotFound
 	}
 
    return updated, result.RowsAffected, nil

@@ -3,6 +3,7 @@ package {{.daoPackageName}}
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/jinzhu/gorm"
 )
@@ -42,9 +43,16 @@ func structToNestedMap(obj interface{}) interface{} {
 
 	switch objType.Kind() {
 	case reflect.Struct:
+		if _, ok := obj.(time.Time); ok {
+			return obj
+		}
+
 		result := make(map[string]interface{})
 
 		for i := 0; i < objType.NumField(); i++ {
+			if !objValue.Field(i).CanInterface() {
+				continue
+			}
 			field := objType.Field(i)                     // 获取字段的元数据
 			value := objValue.Field(i).Interface()        // 获取字段的值
 			result[field.Name] = structToNestedMap(value) // 递归调用 structToNestedMap 处理字段值，并将结果存入 map

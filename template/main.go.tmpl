@@ -1,0 +1,104 @@
+package main
+
+import (
+    "context"
+	"errors"
+	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+    "github.com/jinzhu/gorm"
+    "github.com/gin-gonic/gin"
+    "{{.controllerFQPN}}"
+    "{{.daoFQPN}}"
+    "golang.org/x/sync/errgroup"
+    _ "gorm.io/driver/mysql"
+)
+
+func main() {
+    g, ctx := errgroup.WithContext(context.Background())
+	g.Go(func() error {
+		return InterruptHandler(ctx)
+	})
+    g.Go(func() error {
+		connectDB()
+		return nil
+	})
+	// Start http server.
+	g.Go(func() error {
+		return ServeHTTP(ctx)
+	})
+
+	if err := g.Wait(); err != nil {
+		//TODO: 打印日志
+	}
+}
+
+func ServeHTTP(ctx context.Context) error {
+    gin.SetMode(gin.ReleaseMode)
+	engine := gin.New()
+
+    engine.Use(gin.Recovery())
+    //TODO: 在这里修改port
+    endPoint := ":8000"
+
+    httpSrv := &http.Server{
+		Addr:           endPoint,
+		Handler:        engine,
+		ReadTimeout:    time.Duration(30) * time.Second,
+		WriteTimeout:   time.Duration(10) * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+
+	route(engine)
+	ch := make(chan error)
+	go func() {
+		ch <- httpSrv.ListenAndServe()
+	}()
+
+	select {
+	case err := <-ch:
+		return fmt.Errorf("http server: serve: %v", err)
+	case <-ctx.Done():
+		return httpSrv.Shutdown(context.Background())
+	}
+}
+
+func route(e *gin.Engine) {
+    //TODO: 在这里修改route{{$cName := .controllerPackageName}}
+    {{ range $field := .Modules }} 
+    {{$packageName := (.StructName | toLowerCamelCase) }} 
+    {{ $packageName }}Group := e.Group("{{ $packageName }}")
+    {
+        {{ $packageName }}Group.GET("{{ $packageName }}/list", {{$cName}}.{{ .StructName}}GetAll)
+        {{ $packageName }}Group.GET("{{ $packageName }}/get", {{$cName}}.{{ .StructName}}Get)
+        {{ $packageName }}Group.POST("{{ $packageName }}/add", {{$cName}}.{{ .StructName}}Add)
+        {{ $packageName }}Group.POST("{{ $packageName }}/update", {{$cName}}.{{ .StructName}}Update)
+        {{ $packageName }}Group.POST("{{ $packageName }}/delete", {{$cName}}.{{ .StructName}}Update)
+    }
+    {{end}}
+}
+
+// InterruptHandler handles first SIGINT and SIGTERM and returns it as error.
+func InterruptHandler(ctx context.Context) error {
+	interruptHandler := make(chan os.Signal, 1)
+	signal.Notify(interruptHandler, syscall.SIGINT, syscall.SIGTERM)
+	select {
+	case sig := <-interruptHandler:
+		return fmt.Errorf("signal received: %v", sig.String())
+	case <-ctx.Done():
+		return errors.New("signal listener: context canceled")
+	}
+}
+
+func connectDB() {
+	var err error
+	dao.DB, err = gorm.Open("mysql", "root:E2FU0O1b@tcp(0.0.0.0:3306)/aiinteract?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4")
+	if err != nil {
+		panic(err)
+	}
+	dao.DB = dao.DB.Debug()
+}

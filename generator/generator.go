@@ -34,6 +34,10 @@ func Generate(conf *dbmeta.Config) error {
 	if err != nil {
 		return err
 	}
+	err = generateMain(conf)
+	if err != nil {
+		return err
+	}
 	err = generateController(conf)
 	if err != nil {
 		return err
@@ -59,6 +63,8 @@ func MkDirAll() error {
 	daoDir := filepath.Join(*options.OutDir, *options.DaoPackageName)
 	serviceDir := filepath.Join(*options.OutDir, *options.ServicePackageName)
 	controllerDir := filepath.Join(*options.OutDir, *options.ControllerPackageName)
+	mainDir := filepath.Join(*options.OutDir, "cmd")
+
 	apiDir := filepath.Join(*options.OutDir, *options.ApiPackageName)
 	templatesDir := filepath.Join(*options.OutDir, "templates")
 	docDir := filepath.Join(*options.OutDir, "doc")
@@ -96,6 +102,14 @@ func MkDirAll() error {
 	}
 	if *options.ControllerGenerate {
 		err = os.MkdirAll(controllerDir, 0777)
+		if err != nil && !*options.Overwrite {
+			fmt.Print(options.Au.Red(fmt.Sprintf("unable to create daoDir: %s error: %v\n", daoDir, err)))
+			return err
+		}
+	}
+
+	if *options.FullGenerate {
+		err = os.MkdirAll(mainDir, 0777)
 		if err != nil && !*options.Overwrite {
 			fmt.Print(options.Au.Red(fmt.Sprintf("unable to create daoDir: %s error: %v\n", daoDir, err)))
 			return err
@@ -288,6 +302,43 @@ func generateAPI(conf *dbmeta.Config) error {
 			fmt.Print(options.Au.Red(fmt.Sprintf("Error writing file: %v\n", err)))
 			return err
 		}
+	}
+	return nil
+}
+
+func generateMain(conf *dbmeta.Config) error {
+	if !*options.FullGenerate {
+		return nil
+	}
+	var (
+		err      error
+		mainTmpl *dbmeta.GenTemplate
+		mainDir  = filepath.Join(*options.OutDir, "cmd")
+	)
+	if mainTmpl, err = config.LoadTemplate("main.go.tmpl"); err != nil {
+		fmt.Print(options.Au.Red(fmt.Sprintf("Error loading template %v\n", err)))
+		return err
+	}
+
+	mainFile := filepath.Join(mainDir, "main.go")
+
+	data := map[string]interface{}{}
+	list := []interface{}{}
+	for tableName, tableInfo := range options.TableInfos {
+		if len(tableInfo.Fields) == 0 {
+			if *options.Verbose {
+				fmt.Printf("[%d] Table: %s - No Fields Available\n", tableInfo.Index, tableName)
+			}
+			continue
+		}
+		modelInfo := conf.CreateContextForTableFile(tableInfo)
+		list = append(list, modelInfo)
+	}
+	data["Modules"] = list
+	err = conf.WriteTemplate(mainTmpl, data, mainFile)
+	if err != nil {
+		fmt.Print(options.Au.Red(fmt.Sprintf("Error writing file: %v\n", err)))
+		return err
 	}
 	return nil
 }

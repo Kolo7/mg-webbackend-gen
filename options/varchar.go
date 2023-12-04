@@ -59,6 +59,7 @@ var (
 	DaoGenerate        = goopt.Flag([]string{"--generate-dao"}, []string{}, "Generate dao functions", "")
 	ServiceGenerate    = goopt.Flag([]string{"--generate-service"}, []string{}, "Generate service functions", "")
 	ControllerGenerate = goopt.Flag([]string{"--generate-controller"}, []string{}, "Generate controller functions", "")
+	FullGenerate       = goopt.Flag([]string{"--generate-full"}, []string{}, "Generate full ", "")
 	// ProjectGenerate = goopt.Flag([]string{"--generate-proj"}, []string{}, "Generate project readme and gitignore", "")
 	RestAPIGenerate = goopt.Flag([]string{"--rest"}, []string{}, "Enable generating RESTful api", "")
 	RunGoFmt        = goopt.Flag([]string{"--run-gofmt"}, []string{}, "run gofmt on output dir", "")

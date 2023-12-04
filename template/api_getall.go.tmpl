@@ -1,7 +1,7 @@
 {{define "api_getall.go.tmpl"}}
 type {{ .StructName}}GetAllReq struct {
     Page int `json:"page" form:"page"`
-    PageNum int `json:"pageNum" form:"page"`
+    PageNum int `json:"pageNum" form:"pageNum"`
     Order string `json:"order" form:"order"`
 }
 

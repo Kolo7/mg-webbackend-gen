@@ -11,6 +11,7 @@ mg-webbackend-gen目的是开发一个代码生成工具。工具适用于数据
 ```bash
 mg-webbackend-gen --connstr="root:passwd@tcp(0.0.0.0:3306)/dbname?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4" \
 --database=dbname \
+--table=tablename \
 --generate-dao \
 --generate-service \
 --generate-controller \
@@ -32,6 +33,7 @@ mg-webbackend-gen --connstr="root:passwd@tcp(0.0.0.0:3306)/dbname?timeout=5s&rea
 | --generate-dao        | 是否生成 dao 层代码                                |                                      |
 | --generate-service    | 是否生成  service 层代码                          |                                      |
 | --generate-controller | 是否生成 controller 层代码                         |                                      |
+| --generate-full       | 是否生成 main 文件，可完整运行                     |                                      |
 | --rest                | 是否生成 api model 对象                            |                                      |
 | --controller          | 更改 controller 包名，默认是 controller            | --controller=server                  |
 | --dao                 | 更改 dao 包名，默认是 dao                          | --dao=daos                           |
